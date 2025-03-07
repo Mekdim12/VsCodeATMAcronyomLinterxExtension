@@ -1,9 +1,21 @@
 import * as vscode from 'vscode';
 
-const acronyms: { [key: string]: string } = {
-  "ATM": "Air Traffic Management",
-  "ATC": "Air Traffic Control",
-  "FAA": "Federal Aviation Administration",
+const acronyms: { [key: string]: { description: string, basic_detail: string, detailed_detail: string } } = {
+  "ATM": {
+    "description": "Air Traffic Management",
+    "basic_detail": "explains the basic details of ATM",
+    "detailed_detail": "explains the detailed details of ATM"
+  },
+  "ATC": {
+    "description": "Air Traffic Control",
+    "basic_detail": "explains the basic details of ATC",
+    "detailed_detail": "explains the detailed details of ATC"
+  },
+  "FAA": {
+    "description": "Federal Aviation Administration",
+    "basic_detail": "explains the basic details of FAA",
+    "detailed_detail": "explains the detailed details of FAA"
+  }
   // Add more acronyms here
 };
 
@@ -64,9 +76,9 @@ export function activate(context: vscode.ExtensionContext) {
       if (editor) {
         const selection = editor.selection;
         const selectedText = editor.document.getText(selection);
-        const definition = acronyms[selectedText];
-        if (definition) {
-          vscode.window.showInformationMessage(`${selectedText}: ${definition}`);
+        const acronym = acronyms[selectedText];
+        if (acronym) {
+          vscode.window.showInformationMessage(`${selectedText}: ${acronym.description}`);
         } else {
           vscode.window.showInformationMessage(`No definition found for "${selectedText}"`);
         }
@@ -85,7 +97,7 @@ export function activate(context: vscode.ExtensionContext) {
         Object.keys(acronyms).forEach(acronym => {
           const regex = new RegExp(`(?<=^|\\s|[^A-Za-z])${acronym}(?=$|\\s|[^A-Za-z])|(?<=[a-z])${acronym}(?=$|\\s|[^a-z])|(?<=^|\\s|[^A-Za-z])${acronym}(?=[A-Z][a-z])`, 'gi');
           if (regex.test(text)) {
-            foundAcronyms.push(`${acronym}: ${acronyms[acronym]}`);
+            foundAcronyms.push(`${acronym}: ${acronyms[acronym].description}`);
           }
         });
 
@@ -104,7 +116,8 @@ export function activate(context: vscode.ExtensionContext) {
         const completionItems: vscode.CompletionItem[] = [];
         Object.keys(acronyms).forEach(acronym => {
           const item = new vscode.CompletionItem(acronym, vscode.CompletionItemKind.Text);
-          item.detail = acronyms[acronym];
+          item.detail = acronyms[acronym].description;
+          item.documentation = new vscode.MarkdownString(`**Basic Detail:** ${acronyms[acronym].basic_detail}\n\n**Detailed Detail:** ${acronyms[acronym].detailed_detail}`);
           completionItems.push(item);
         });
         return completionItems;
@@ -113,4 +126,4 @@ export function activate(context: vscode.ExtensionContext) {
   );
 }
 
-export function deactivate() {}  
+export function deactivate() {}
