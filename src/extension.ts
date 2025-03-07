@@ -21,7 +21,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Iterate through each acronym in the dictionary
     Object.keys(acronyms).forEach(acronym => {
       // Create a regex pattern to match the acronym in valid contexts
-	  const regex = new RegExp(`(?<=^|\\s|[^A-Za-z])${acronym}(?=$|\\s|[^A-Za-z])|(?<=[a-z])${acronym}(?=$|\\s|[^a-z])|(?<=^|\\s|[^A-Za-z])${acronym}(?=[A-Z][a-z])`, 'gi');
+      const regex = new RegExp(`(?<=^|\\s|[^A-Za-z])${acronym}(?=$|\\s|[^A-Za-z])|(?<=[a-z])${acronym}(?=$|\\s|[^a-z])|(?<=^|\\s|[^A-Za-z])${acronym}(?=[A-Z][a-z])`, 'gi');
 
       // Find all matches in the text
       let match;
@@ -83,7 +83,7 @@ export function activate(context: vscode.ExtensionContext) {
         const foundAcronyms: string[] = [];
 
         Object.keys(acronyms).forEach(acronym => {
-			const regex = new RegExp(`(?<=^|\\s|[^A-Za-z])${acronym}(?=$|\\s|[^A-Za-z])|(?<=[a-z])${acronym}(?=$|\\s|[^a-z])|(?<=^|\\s|[^A-Za-z])${acronym}(?=[A-Z][a-z])`, 'gi');
+          const regex = new RegExp(`(?<=^|\\s|[^A-Za-z])${acronym}(?=$|\\s|[^A-Za-z])|(?<=[a-z])${acronym}(?=$|\\s|[^a-z])|(?<=^|\\s|[^A-Za-z])${acronym}(?=[A-Z][a-z])`, 'gi');
           if (regex.test(text)) {
             foundAcronyms.push(`${acronym}: ${acronyms[acronym]}`);
           }
@@ -96,6 +96,21 @@ export function activate(context: vscode.ExtensionContext) {
       }
     })
   );
+
+  // Register a completion provider for acronyms
+  context.subscriptions.push(
+    vscode.languages.registerCompletionItemProvider({ scheme: 'file', language: 'plaintext' }, {
+      provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
+        const completionItems: vscode.CompletionItem[] = [];
+        Object.keys(acronyms).forEach(acronym => {
+          const item = new vscode.CompletionItem(acronym, vscode.CompletionItemKind.Text);
+          item.detail = acronyms[acronym];
+          completionItems.push(item);
+        });
+        return completionItems;
+      }
+    })
+  );
 }
 
-export function deactivate() {}
+export function deactivate() {}  
