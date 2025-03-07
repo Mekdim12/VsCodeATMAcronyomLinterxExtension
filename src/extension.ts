@@ -1,26 +1,101 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
+const acronyms: { [key: string]: string } = {
+  "ATM": "Air Traffic Management",
+  "ATC": "Air Traffic Control",
+  "FAA": "Federal Aviation Administration",
+  // Add more acronyms here
+};
+
 export function activate(context: vscode.ExtensionContext) {
+  // Create a decoration type for highlighting
+  const acronymDecorationType = vscode.window.createTextEditorDecorationType({
+    backgroundColor: 'rgba(255, 255, 0, 0.3)', // Yellow highlight
+  });
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "atmacronymhighlighter" is now active!');
+  // Function to highlight acronyms
+  function highlightAcronyms(editor: vscode.TextEditor) {
+    const text = editor.document.getText();
+    const decorations: vscode.DecorationOptions[] = [];
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('atmacronymhighlighter.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from ATMAcronymHighLighter!');
-	});
+    // Iterate through each acronym in the dictionary
+    Object.keys(acronyms).forEach(acronym => {
+      // Create a regex pattern to match the acronym in valid contexts
+	  const regex = new RegExp(`(?<=^|\\s|[^A-Za-z])${acronym}(?=$|\\s|[^A-Za-z])|(?<=[a-z])${acronym}(?=$|\\s|[^a-z])|(?<=^|\\s|[^A-Za-z])${acronym}(?=[A-Z][a-z])`, 'gi');
 
-	context.subscriptions.push(disposable);
+      // Find all matches in the text
+      let match;
+      while ((match = regex.exec(text)) !== null) {
+        const startPos = editor.document.positionAt(match.index);
+        const endPos = editor.document.positionAt(match.index + acronym.length);
+        const decoration = { range: new vscode.Range(startPos, endPos) };
+        decorations.push(decoration);
+      }
+    });
+
+    // Apply the decorations to the editor
+    editor.setDecorations(acronymDecorationType, decorations);
+  }
+
+  // Highlight acronyms when the active editor changes
+  vscode.window.onDidChangeActiveTextEditor(editor => {
+    if (editor) {
+      highlightAcronyms(editor);
+    }
+  });
+
+  // Highlight acronyms in the current editor when the extension is activated
+  if (vscode.window.activeTextEditor) {
+    highlightAcronyms(vscode.window.activeTextEditor);
+  }
+
+  // Listen for text changes in the active editor
+  vscode.workspace.onDidChangeTextDocument(event => {
+    const editor = vscode.window.activeTextEditor;
+    if (editor && event.document === editor.document) {
+      highlightAcronyms(editor);
+    }
+  });
+
+  // Register command to show acronym definition
+  context.subscriptions.push(
+    vscode.commands.registerCommand('atmacronymhighlighter.showAcronymDefinition', () => {
+      const editor = vscode.window.activeTextEditor;
+      if (editor) {
+        const selection = editor.selection;
+        const selectedText = editor.document.getText(selection);
+        const definition = acronyms[selectedText];
+        if (definition) {
+          vscode.window.showInformationMessage(`${selectedText}: ${definition}`);
+        } else {
+          vscode.window.showInformationMessage(`No definition found for "${selectedText}"`);
+        }
+      }
+    })
+  );
+
+  // Register command to collect acronyms
+  context.subscriptions.push(
+    vscode.commands.registerCommand('atmacronymhighlighter.collectAcronyms', () => {
+      const editor = vscode.window.activeTextEditor;
+      if (editor) {
+        const text = editor.document.getText();
+        const foundAcronyms: string[] = [];
+
+        Object.keys(acronyms).forEach(acronym => {
+			const regex = new RegExp(`(?<=^|\\s|[^A-Za-z])${acronym}(?=$|\\s|[^A-Za-z])|(?<=[a-z])${acronym}(?=$|\\s|[^a-z])|(?<=^|\\s|[^A-Za-z])${acronym}(?=[A-Z][a-z])`, 'gi');
+          if (regex.test(text)) {
+            foundAcronyms.push(`${acronym}: ${acronyms[acronym]}`);
+          }
+        });
+
+        const docString = `/**\n * Acronyms:\n * ${foundAcronyms.join('\n * ')}\n */\n`;
+        editor.edit(editBuilder => {
+          editBuilder.insert(new vscode.Position(0, 0), docString);
+        });
+      }
+    })
+  );
 }
 
-// This method is called when your extension is deactivated
 export function deactivate() {}

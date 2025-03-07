@@ -9,15 +9,38 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:atmacronymhighlighter.showAcronymDefinition",
+    "onCommand:atmacronymhighlighter.collectAcronyms"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "atmacronymhighlighter.helloWorld",
-        "title": "Hello World"
+        "command": "atmacronymhighlighter.showAcronymDefinition",
+        "title": "Show Acronym Definition"
+      },
+      {
+        "command": "atmacronymhighlighter.collectAcronyms",
+        "title": "Collect Acronyms"
       }
-    ]
+    ],
+    "keybindings": [
+      {
+        "command": "atmacronymhighlighter.showAcronymDefinition",
+        "key": "ctrl+shift+q",
+        "mac": "cmd+shift+q"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "atmacronymhighlighter.collectAcronyms",
+          "group": "navigation"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
