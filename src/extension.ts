@@ -141,22 +141,32 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Register a completion provider for acronyms
   context.subscriptions.push(
-    vscode.languages.registerCompletionItemProvider({ scheme: 'file', language: 'plaintext' }, {
-      async provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
-        const completionItems: vscode.CompletionItem[] = [];
-        for (const acronym of Object.keys(acronyms)) {
-          const item = new vscode.CompletionItem(acronym, vscode.CompletionItemKind.Text);
-          item.detail = acronyms[acronym].description;
-          const aiSuggestion = await getAISuggestion(acronym);
-          console.log(aiSuggestion);
-          acronyms[acronym].ai_suggestion = aiSuggestion;
+    vscode.languages.registerCompletionItemProvider(
+      [
+        { scheme: 'file', language: 'plaintext' },
+        { scheme: 'file', language: 'python' },
+        { scheme: 'file', language: 'javascript' },
+        { scheme: 'file', language: 'typescript' },
+        { scheme: 'file', language: 'java' },
+        { scheme: 'file', language: 'cpp' }
+      ],
+      {
+        async provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
+          const completionItems: vscode.CompletionItem[] = [];
+          for (const acronym of Object.keys(acronyms)) {
+            const item = new vscode.CompletionItem(acronym, vscode.CompletionItemKind.Text);
+            item.detail = acronyms[acronym].description;
+            const aiSuggestion = await getAISuggestion(acronym);
+            console.log(aiSuggestion);
+            acronyms[acronym].ai_suggestion = aiSuggestion;
 
-          item.documentation = new vscode.MarkdownString(`**Basic Detail:** ${acronyms[acronym].basic_detail}\n\n**Detailed Detail:** ${acronyms[acronym].detailed_detail}\n\n**AI Suggestion:** ${aiSuggestion}`);
-          completionItems.push(item);
+            item.documentation = new vscode.MarkdownString(`**Basic Detail:** ${acronyms[acronym].basic_detail}\n\n**Detailed Detail:** ${acronyms[acronym].detailed_detail}\n\n**AI Suggestion:** ${aiSuggestion}`);
+            completionItems.push(item);
+          }
+          return completionItems;
         }
-        return completionItems;
       }
-    })
+    )
   );
 }
 
