@@ -131,7 +131,24 @@ export async function activate(context: vscode.ExtensionContext) {
           }
         });
 
-        const docString = `/**\n * Acronyms:\n * ${foundAcronyms.join('\n * ')}\n */\n`;
+        const languageId = editor.document.languageId;
+        let docString = '';
+
+        switch (languageId) {
+          case 'python':
+            docString = `"""\n Generated ATM Acronyms:\n${foundAcronyms.map(acronym => `* ${acronym}`).join('\n')}\n"""\n`;
+            break;
+          case 'javascript':
+          case 'typescript':
+          case 'java':
+          case 'cpp':
+            docString = `/**\n * Generated ATM Acronyms:\n${foundAcronyms.map(acronym => ` * ${acronym}`).join('\n')}\n */\n`;
+            break;
+          default:
+            docString = `/**\n * Generated ATM Acronyms:\n${foundAcronyms.map(acronym => ` * ${acronym}`).join('\n')}\n */\n`;
+            break;
+        }
+
         editor.edit(editBuilder => {
           editBuilder.insert(new vscode.Position(0, 0), docString);
         });
