@@ -1,24 +1,26 @@
 import * as vscode from 'vscode';
 import axios from 'axios';
+import * as fs from 'fs';
+import * as path from 'path';
 
-const acronyms: { [key: string]: { description: string, basic_detail: string, detailed_detail: string, ai_suggestion?: string } } = {
-  "ATM": {
-    "description": "Air Traffic Management",
-    "basic_detail": "explains the basic details of ATM",
-    "detailed_detail": "explains the detailed details of ATM"
-  },
-  "ATC": {
-    "description": "Air Traffic Control",
-    "basic_detail": "explains the basic details of ATC",
-    "detailed_detail": "explains the detailed details of ATC"
-  },
-  "FAA": {
-    "description": "Federal Aviation Administration",
-    "basic_detail": "explains the basic details of FAA",
-    "detailed_detail": "explains the detailed details of FAA"
-  }
-  // Add more acronyms here
-};
+let acronyms: { [key: string]: { description: string, basic_detail: string, detailed_detail: string, ai_suggestion?: string } } = {};
+
+// Load acronyms from JSON file
+const acronymsFilePath = path.join(__dirname, 'atm_acronyms.json');
+
+function loadAcronyms(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    fs.readFile(acronymsFilePath, 'utf8', (err, data) => {
+      if (err) {
+        console.error('Error reading acronyms file:', err);
+        reject(err);
+        return;
+      }
+      acronyms = JSON.parse(data);
+      resolve();
+    });
+  });
+}
 
 async function getAISuggestion(acronym: string): Promise<string> {
   const url = "http://192.168.0.112:11434/api/generate";
@@ -32,9 +34,6 @@ async function getAISuggestion(acronym: string): Promise<string> {
   };
 
   try {
-    console.log("Calling Ollama API...");
-    console.log("URL: ", url);
-    console.log("Data: ", data);
     const response = await axios.post(url, data, { headers });
     console.log(response.data); // Print the response
     return response.data.response; // Adjust this based on the actual response structure
@@ -48,7 +47,9 @@ async function getAISuggestion(acronym: string): Promise<string> {
   }
 }
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
+  await loadAcronyms();
+
   // Create a decoration type for highlighting
   const acronymDecorationType = vscode.window.createTextEditorDecorationType({
     backgroundColor: 'rgba(255, 255, 0, 0.3)', // Yellow highlight
