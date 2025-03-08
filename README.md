@@ -1,51 +1,34 @@
-# atmacronymhighlighter README
+# ATMAcronymHighLighter README
 
-This is the README for your extension "atmacronymhighlighter". After writing up a brief description, we recommend including the following sections.
+ATMAcronymHighLighter is a VS Code extension that highlights air traffic management (ATM) acronyms, provides quick definitions via a shortcut, and collects acronyms into a docstring.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+- **Highlight Acronyms**: Automatically highlights ATM acronyms in your code.
+- **Show Acronym Definition**: Quickly view the definition of an acronym using a keyboard shortcut.
+- **Collect Acronyms**: Collect all acronyms in the current document and insert them into a docstring.
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- Visual Studio Code version 1.98.0 or higher.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
 This extension contributes the following settings:
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+* `atmacronymhighlighter.enable`: Enable/disable this extension.
+* `atmacronymhighlighter.showAcronymDefinition`: Show the definition of the selected acronym.
+* `atmacronymhighlighter.collectAcronyms`: Collect all acronyms in the current document.
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+- No known issues at this time.
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+### 0.0.1
 
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+- Initial release of ATMAcronymHighLighter.
 
 ---
 
@@ -67,5 +50,34 @@ You can author your README using Visual Studio Code. Here are some useful editor
 
 * [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
 * [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
+
+## How to Run
+
+To run this extension, follow these steps:
+
+1. **Clone the repository**:
+    ```sh
+    git clone https://github.com/yourusername/atmacronymhighlighter.git
+    cd atmacronymhighlighter
+    ```
+
+2. **Open the project in Visual Studio Code**:
+    ```sh
+    code .
+    ```
+
+3. **Install dependencies**:
+    ```sh
+    npm install
+    ```
+
+4. **Run the extension**:
+    - Press `F5` to open a new VS Code window with the extension loaded.
+
+5. **Use the extension**:
+    - Open any text file, and the extension will automatically highlight ATM acronyms.
+    - Use the command palette (`Ctrl+Shift+P` or `Cmd+Shift+P` on macOS) to access the following commands:
+        - `ATMAcronymHighLighter: Show Acronym Definition`
+        - `ATMAcronymHighLighter: Collect Acronyms`
 
 **Enjoy!**
