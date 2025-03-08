@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
+import axios from 'axios';
 
-const acronyms: { [key: string]: { description: string, basic_detail: string, detailed_detail: string } } = {
+const acronyms: { [key: string]: { description: string, basic_detail: string, detailed_detail: string, ai_suggestion?: string } } = {
   "ATM": {
     "description": "Air Traffic Management",
     "basic_detail": "explains the basic details of ATM",
@@ -18,6 +19,34 @@ const acronyms: { [key: string]: { description: string, basic_detail: string, de
   }
   // Add more acronyms here
 };
+
+async function getAISuggestion(acronym: string): Promise<string> {
+  const url = "http://192.168.0.112:11434/api/generate";
+  const data = {
+    model: "tinyllama", // Use the correct model
+    prompt: `Provide a detailed explanation for the acronym ${acronym}`,
+    stream: false
+  };
+  const headers = {
+    "Content-Type": "application/json"
+  };
+
+  try {
+    console.log("Calling Ollama API...");
+    console.log("URL: ", url);
+    console.log("Data: ", data);
+    const response = await axios.post(url, data, { headers });
+    console.log(response.data); // Print the response
+    return response.data.response; // Adjust this based on the actual response structure
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error("Error calling Ollama API:", error.response ? error.response.data : error.message);
+    } else {
+      console.error("Error calling Ollama API:2", error);
+    }
+    return `Error fetching AI suggestion: ${(error as any)?.message}`;
+  }
+}
 
 export function activate(context: vscode.ExtensionContext) {
   // Create a decoration type for highlighting
@@ -112,14 +141,18 @@ export function activate(context: vscode.ExtensionContext) {
   // Register a completion provider for acronyms
   context.subscriptions.push(
     vscode.languages.registerCompletionItemProvider({ scheme: 'file', language: 'plaintext' }, {
-      provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
+      async provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
         const completionItems: vscode.CompletionItem[] = [];
-        Object.keys(acronyms).forEach(acronym => {
+        for (const acronym of Object.keys(acronyms)) {
           const item = new vscode.CompletionItem(acronym, vscode.CompletionItemKind.Text);
           item.detail = acronyms[acronym].description;
-          item.documentation = new vscode.MarkdownString(`**Basic Detail:** ${acronyms[acronym].basic_detail}\n\n**Detailed Detail:** ${acronyms[acronym].detailed_detail}`);
+          const aiSuggestion = await getAISuggestion(acronym);
+          console.log(aiSuggestion);
+          acronyms[acronym].ai_suggestion = aiSuggestion;
+
+          item.documentation = new vscode.MarkdownString(`**Basic Detail:** ${acronyms[acronym].basic_detail}\n\n**Detailed Detail:** ${acronyms[acronym].detailed_detail}\n\n**AI Suggestion:** ${aiSuggestion}`);
           completionItems.push(item);
-        });
+        }
         return completionItems;
       }
     })
